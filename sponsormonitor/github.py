@@ -18,6 +18,10 @@ async def get_team_id(team_name):
         )
 
         teams = list(filter(lambda t: t["name"].lower() == team_name.lower(), r.json()))
+
+        if not r.status_code == 200:
+            raise Exception(f"Unexpected status code returned {r.status_code}: {r.text}")
+
         if len(teams) == 1:
             return teams[0]["id"]
 
@@ -25,7 +29,7 @@ async def get_team_id(team_name):
 
 
 # https://developer.github.com/v3/orgs/members/#create-an-organization-invitation
-async def send_org_invite(user_id, tier):
+async def send_org_invite(user_id: int, tier: int):
     team_name = settings.tiers.get(tier)
     if not team_name:
         raise Exception(
@@ -34,23 +38,29 @@ async def send_org_invite(user_id, tier):
 
     team_id = await get_team_id(team_name)
 
-    invitation = {"invitee_id": 0, "role": "direct_member", "team_ids": [team_id]}
+    invitation = {"invitee_id": user_id, "role": "direct_member", "team_ids": [team_id]}
 
     async with httpx.AsyncClient() as client:
-        await client.post(
+        r = await client.post(
             f"https://api.github.com/orgs/{settings.github_org}/invitations",
             headers={"Authorization": f"token {settings.github_access_token}"},
             json=invitation,
         )
 
+        if not r.status_code == 201:
+            raise Exception(f"Unexpected status code returned {r.status_code}: {r.text}")
+
 
 # https://developer.github.com/v3/orgs/members/#remove-organization-membership-for-a-user
 async def remove_user_from_org(user):
     async with httpx.AsyncClient() as client:
-        await client.delete(
+        r = await client.delete(
             f"https://api.github.com/orgs/{settings.github_org}/memberships/{user}",
             headers={"Authorization": f"token {settings.github_access_token}"},
         )
+
+        if not r.status_code == 200:
+            raise Exception(f"Unexpected status code returned {r.status_code}: {r.text}")
 
 
 # https://developer.github.com/webhooks/securing/
