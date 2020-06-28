@@ -1,6 +1,8 @@
 import asyncio
 import httpx
 import logging
+import hmac
+import hashlib
 from sponsormonitor import config
 
 log = logging.getLogger("sponsormonitor.github")
@@ -26,7 +28,9 @@ async def get_team_id(team_name):
 async def send_org_invite(user_id, tier):
     team_name = settings.tiers.get(tier)
     if not team_name:
-        raise Exception(f"Tier doesn't seemed to be defined in config. Received tier: {tier}")
+        raise Exception(
+            f"Tier doesn't seemed to be defined in config. Received tier: {tier}"
+        )
 
     team_id = await get_team_id(team_name)
 
@@ -47,3 +51,9 @@ async def remove_user_from_org(user):
             f"https://api.github.com/orgs/{settings.github_org}/memberships/{user}",
             headers={"Authorization": f"token {settings.github_access_token}"},
         )
+
+
+# https://developer.github.com/webhooks/securing/
+async def verify_signature(request_body: bytes, signature_header: str) -> bool:
+    digest = hmac.new(settings.secret_token.encode(), request_body, "sha1").hexdigest()
+    return hmac.compare_digest(f"sha1={digest}", signature_header)

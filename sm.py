@@ -1,10 +1,11 @@
 import asyncio
 import logging
+from typing import Union
 from sponsormonitor import github
 from sponsormonitor import config
-from sponsormonitor.models import SponsorAction, SponsorActivity
+from sponsormonitor.models import SponsorAction, SponsorActivity, PingPayload
 from fastapi import FastAPI, Depends
-from fastapi import Response, status
+from fastapi import Response, status, Request
 
 app = FastAPI()
 log = logging.getLogger("sponsormonitor")
@@ -12,8 +13,22 @@ log = logging.getLogger("sponsormonitor")
 
 @app.post("/")
 async def handle_sponsor_webhook(
-    data: SponsorActivity, settings: config.Settings = Depends(config.get_settings)
+    data: Union[SponsorActivity, PingPayload],
+    request: Request,
+    settings: config.Settings = Depends(config.get_settings),
 ):
+    if not request.headers.get("X-Hub-Signature"):
+        return Response(status_code=status.HTTP_400_BAD_REQUEST)
+
+    if not await github.verify_signature(
+        await request.body(), request.headers["X-Hub-Signature"]
+    ):
+        return Response(status_code=status.HTTP_400_BAD_REQUEST)
+
+    if isinstance(data, PingPayload):
+        log.info("Received ping payload, webhook successfully configured")
+        return Response(status_code=status.HTTP_200_OK)
+
     log.info(f"Sponsorship update: {data.action}")
 
     user = data.sponsorship["sponsor"]["login"]

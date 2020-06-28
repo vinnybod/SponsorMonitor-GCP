@@ -1,12 +1,13 @@
 import configparser
 import pathlib
-from typing import Dict
+from typing import Dict, ByteString
 from functools import lru_cache
 from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):
     github_access_token: str
+    secret_token: str
     github_org: str
     tiers: Dict[int, str]
     minimum_tier: int = 15

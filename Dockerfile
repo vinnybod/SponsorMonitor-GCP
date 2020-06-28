@@ -16,5 +16,6 @@ RUN pip3 install --no-cache-dir uvicorn
 
 COPY . .
 
-EXPOSE 8080
-CMD [ "uvicorn" ]
+EXPOSE 5000
+
+CMD ["uvicorn", "sm:app", "--host", "0.0.0.0", "--port", "5000"]

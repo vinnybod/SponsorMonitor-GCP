@@ -18,3 +18,13 @@ class SponsorActivity(BaseModel):
     sender: Dict[Any, Any]
     changes: Dict[Any, Any] = None
     effective_date: str = None
+
+
+# https://developer.github.com/webhooks/event-payloads/#ping
+class PingPayload(BaseModel):
+    zen: str
+    hook_id: int
+    hook: Dict[Any, Any]
+    sender: Dict[Any, Any]
+    repository: Dict[Any, Any] = None
+    organization: Dict[Any, Any] = None
