@@ -25,7 +25,7 @@ certificatesResolvers:
         acme:
             email: admin@example.com
             storage: acme.json
-            # Staging server for testing
+            # Staging server for testing, comment when deploying to prod
             caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
             #tlsChallenge:
 
