@@ -1,5 +1,6 @@
 tests
 Dockerfile
+sm.conf
 *.pyc
 *.pyo
 *.pyd

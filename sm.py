@@ -42,9 +42,11 @@ async def handle_sponsor_webhook(
         await github.remove_user_from_org(user)
 
     elif data.action == SponsorAction.PENDING_TIER_CHANGE:
+        from_tier = data.changes["tier"]["from"]["monthly_price_in_dollars"]
+
         if tier < settings.minimum_tier:
             await github.remove_user_from_org(user)
-        elif tier > settings.minimum_tier:
+        elif tier >= settings.minimum_tier and from_tier < settings.minimum_tier:
             await github.send_org_invite(user_id, tier)
 
     return Response(status_code=status.HTTP_200_OK)

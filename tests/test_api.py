@@ -42,7 +42,7 @@ def test_recv_new_sponsor(raw_new_sponsor_payload_with_sig):
     r = client.post(
         "/",
         data=payload,
-        headers={"Content-Type": "application/json", "X-Hub-Signature": sig,},
+        headers={"Content-Type": "application/json", "X-Hub-Signature": sig}
     )
     assert r.status_code == 200
 
@@ -53,7 +53,7 @@ def test_recv_tier_change(raw_sponsor_tier_change_payload_with_sig):
     r = client.post(
         "/",
         data=payload,
-        headers={"Content-Type": "application/json", "X-Hub-Signature": sig,},
+        headers={"Content-Type": "application/json", "X-Hub-Signature": sig}
     )
     assert r.status_code == 200
 """
