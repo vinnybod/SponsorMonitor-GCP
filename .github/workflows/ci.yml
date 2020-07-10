@@ -28,17 +28,3 @@ jobs:
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GIT_TOKEN_WEBHOOK }}
         SECRET_TOKEN: ${{ secrets.SECRET_WEBHOOK_TOKEN }}
-
-    - name: Build Docker Image and Publish to Docker Hub
-      uses: whoan/docker-build-with-cache-action@v5
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-        image_name: sponsormonitor
-    - name: Build Docker Image and Publish to Github Packages
-      uses: whoan/docker-build-with-cache-action@v5
-      with:
-        username: ${{ secrets.GIT_USERNAME }}
-        password: ${{ secrets.GIT_TOKEN }}
-        registry: docker.pkg.github.com
-        image_name: sponsormonitor

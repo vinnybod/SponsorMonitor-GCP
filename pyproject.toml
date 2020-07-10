@@ -1,7 +1,9 @@
 [tool.poetry]
 name = "SponsorMonitor"
 version = "0.1.0"
-description = ""
+description = "Monitor Github Sponsors and automatically add/remove them to/from a Github Organization Team. "
+homepage = "https://github.com/byt3bl33d3r/SponsorMonitor"
+repository = "https://github.com/byt3bl33d3r/SponsorMonitor"
 authors = ["Marcello Salvati <byt3bl33d3r@pm.com>"]
 
 [tool.poetry.dependencies]
@@ -9,6 +11,7 @@ python = "^3.8"
 fastapi = "^0.58.0"
 httpx = "^0.13.3"
 pydantic = "^1.5.1"
+uvicorn = "^0.11.5"
 
 [tool.poetry.dev-dependencies]
 black = "^19.10b0"
@@ -16,7 +19,6 @@ flake8 = "^3.8.3"
 pylint = "^2.5.3"
 pytest = "^5.4.3"
 requests = "^2.24.0"
-uvicorn = "^0.11.5"
 pytest-asyncio = "^0.14.0"
 
 [build-system]
