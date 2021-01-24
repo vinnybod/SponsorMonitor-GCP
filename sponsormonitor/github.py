@@ -9,8 +9,9 @@ log = logging.getLogger("sponsormonitor.github")
 
 settings = config.get_settings()
 
+
 # https://developer.github.com/v3/teams/#list-teams
-async def get_team_id(team_name):
+async def get_team_slug(team_name):
     async with httpx.AsyncClient() as client:
         r = await client.get(
             f"https://api.github.com/orgs/{settings.github_org}/teams",
@@ -23,12 +24,12 @@ async def get_team_id(team_name):
             raise Exception(f"Unexpected status code returned {r.status_code}: {r.text}")
 
         if len(teams) == 1:
-            return teams[0]["id"]
+            return teams[0]["slug"]
 
         raise Exception(f"Unexpected number of teams returned: {len(teams)}")
 
 
-# https://developer.github.com/v3/orgs/members/#create-an-organization-invitation
+# https://docs.github.com/en/rest/reference/teams#add-or-update-team-membership-for-a-user
 async def send_org_invite(user_id: int, tier: int):
     team_name = settings.tiers.get(tier)
     if not team_name:
@@ -36,18 +37,16 @@ async def send_org_invite(user_id: int, tier: int):
             f"Tier doesn't seemed to be defined in config. Received tier: {tier}"
         )
 
-    team_id = await get_team_id(team_name)
-
-    invitation = {"invitee_id": user_id, "role": "direct_member", "team_ids": [team_id]}
+    team_slug = await get_team_slug(team_name)
 
     async with httpx.AsyncClient() as client:
-        r = await client.post(
-            f"https://api.github.com/orgs/{settings.github_org}/invitations",
+        r = await client.put(
+            f"https://api.github.com/orgs/{settings.github_org}/teams/{team_slug}/memberships/{user_id}",
             headers={"Authorization": f"token {settings.github_access_token}"},
-            json=invitation,
+            json={"role": "member"},
         )
 
-        if not r.status_code == 201:
+        if not r.status_code == 200:
             raise Exception(f"Unexpected status code returned {r.status_code}: {r.text}")
 
 
@@ -59,7 +58,7 @@ async def remove_user_from_org(user):
             headers={"Authorization": f"token {settings.github_access_token}"},
         )
 
-        if not r.status_code == 200:
+        if not r.status_code == 204:
             raise Exception(f"Unexpected status code returned {r.status_code}: {r.text}")
 
 

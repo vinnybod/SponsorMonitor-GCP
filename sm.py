@@ -32,21 +32,20 @@ async def handle_sponsor_webhook(
     log.info(f"Sponsorship update: {data.action}")
 
     user = data.sponsorship["sponsor"]["login"]
-    user_id = data.sponsorship["sponsor"]["id"]
-    tier = int(data.sponsorship["tier"]["monthly_price_in_dollars"])
+    tier = int(float(data.sponsorship["tier"]["monthly_price_in_dollars"]))
 
     if data.action == SponsorAction.CREATED:
-        await github.send_org_invite(user_id, tier)
+        await github.send_org_invite(user, tier)
 
     elif data.action == SponsorAction.CANCELLED:
         await github.remove_user_from_org(user)
 
     elif data.action == SponsorAction.PENDING_TIER_CHANGE:
-        from_tier = data.changes["tier"]["from"]["monthly_price_in_dollars"]
+        from_tier = int(float(data.changes["tier"]["from"]["monthly_price_in_dollars"]))
 
         if tier < settings.minimum_tier:
             await github.remove_user_from_org(user)
-        elif tier >= settings.minimum_tier and from_tier < settings.minimum_tier:
-            await github.send_org_invite(user_id, tier)
+        elif tier >= settings.minimum_tier > from_tier:
+            await github.send_org_invite(user, tier)
 
     return Response(status_code=status.HTTP_200_OK)
