@@ -10,7 +10,7 @@ log = logging.getLogger("sponsormonitor.github")
 settings = config.get_settings()
 
 
-# https://developer.github.com/v3/teams/#list-teams
+# https://docs.github.com/en/rest/reference/teams#list-teams
 async def get_team_slug(team_name):
     async with httpx.AsyncClient() as client:
         r = await client.get(
@@ -30,7 +30,7 @@ async def get_team_slug(team_name):
 
 
 # https://docs.github.com/en/rest/reference/teams#add-or-update-team-membership-for-a-user
-async def send_org_invite(user_id: int, tier: int):
+async def send_org_invite(user: str, tier: int):
     team_name = settings.tiers.get(tier)
     if not team_name:
         raise Exception(
@@ -41,7 +41,7 @@ async def send_org_invite(user_id: int, tier: int):
 
     async with httpx.AsyncClient() as client:
         r = await client.put(
-            f"https://api.github.com/orgs/{settings.github_org}/teams/{team_slug}/memberships/{user_id}",
+            f"https://api.github.com/orgs/{settings.github_org}/teams/{team_slug}/memberships/{user}",
             headers={"Authorization": f"token {settings.github_access_token}"},
             json={"role": "member"},
         )
@@ -50,7 +50,7 @@ async def send_org_invite(user_id: int, tier: int):
             raise Exception(f"Unexpected status code returned {r.status_code}: {r.text}")
 
 
-# https://developer.github.com/v3/orgs/members/#remove-organization-membership-for-a-user
+# https://docs.github.com/en/rest/reference/orgs#remove-an-organization-member
 async def remove_user_from_org(user):
     async with httpx.AsyncClient() as client:
         r = await client.delete(

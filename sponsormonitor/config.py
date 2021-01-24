@@ -22,5 +22,5 @@ def get_settings():
     return Settings(
         github_org=config["Default"]["OrgName"],
         minimum_tier=config["Default"]["MinTier"],
-        tiers={int(k): v for k, v in config["Tiers"].items()},
+        tiers={k: v for k, v in config["Tiers"].items()},
     )

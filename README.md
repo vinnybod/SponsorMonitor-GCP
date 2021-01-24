@@ -147,7 +147,7 @@ Once you got the configuration down, simply run in the same directory:
 
 This will deploy your google function which you should be able to see [here](https://console.cloud.google.com/functions/list)
 ```console
-gcloud functions deploy sponsormonitor --trigger-http --runtime python37
+gcloud functions deploy sponsormonitor --trigger-http --runtime python39
 ```
 
 To run the function locally for testing, use
