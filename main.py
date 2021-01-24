@@ -1,33 +1,47 @@
 import asyncio
 import logging
-from typing import Union
+
+from pydantic import ValidationError
+
 from sponsormonitor import github
 from sponsormonitor import config
 from sponsormonitor.models import SponsorAction, SponsorActivity, PingPayload
-from fastapi import FastAPI, Depends
-from fastapi import Response, status, Request
+from flask import make_response
 
-app = FastAPI()
 log = logging.getLogger("sponsormonitor")
 
+settings = config.get_settings()
 
-@app.post("/")
-async def handle_sponsor_webhook(
-    data: Union[SponsorActivity, PingPayload],
-    request: Request,
-    settings: config.Settings = Depends(config.get_settings),
-):
+
+def sponsormonitor(request):
+    return asyncio.run(do_work(request))
+
+
+async def do_work(request):
+    data = None
+    try:
+        data = SponsorActivity.parse_obj(request.get_json())
+    except ValidationError as e:
+        log.info("Could not parse to sponsoractivity")
+    try:
+        data = PingPayload.parse_obj(request.get_json())
+    except ValidationError as e:
+        log.info("Could not parse to pingpayload")
+
+    if data is None:
+        return make_response({'error': 'could not parse payload'}, 400)
+
     if not request.headers.get("X-Hub-Signature"):
-        return Response(status_code=status.HTTP_400_BAD_REQUEST)
+        return make_response({'error': 'no signature'}, 400)
 
     if not await github.verify_signature(
-        await request.body(), request.headers["X-Hub-Signature"]
+            request.data, request.headers["X-Hub-Signature"]
     ):
-        return Response(status_code=status.HTTP_400_BAD_REQUEST)
+        return make_response({'error': 'signature not verified'}, 400)
 
     if isinstance(data, PingPayload):
         log.info("Received ping payload, webhook successfully configured")
-        return Response(status_code=status.HTTP_200_OK)
+        return make_response({}, 200)
 
     log.info(f"Sponsorship update: {data.action}")
 
@@ -49,4 +63,4 @@ async def handle_sponsor_webhook(
         elif tier >= settings.minimum_tier and from_tier < settings.minimum_tier:
             await github.send_org_invite(user_id, tier)
 
-    return Response(status_code=status.HTTP_200_OK)
+    return make_response({}, 200)

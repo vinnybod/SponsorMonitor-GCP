@@ -10,6 +10,10 @@ One of the first major problems you'll encounter if you do go down this road (an
 
 Since setting up SponsorMonitor requires you to go through all the steps necessary to get a working [Sponsorware](https://github.com/sponsorware/docs) setup going within Github, we're killing 2 birds with one stone: after you finish setting SponsorMonitor up, you'll have everything you need to get started releasing software under this model and as bonus points you'll have automated the process of adding your sponsors to their appropriate Github Organization team.
 
+# GCP Fork
+
+This fork is made to run on [Google Cloud Functions](https://cloud.google.com/functions) for those that prefer serverless.
+
 # Table of Contents
 
 - [SponsorMonitor](#sponsormonitor)
@@ -28,9 +32,7 @@ Since setting up SponsorMonitor requires you to go through all the steps necessa
 For the setup I came up with you'll need:
 - A Github user account
 - A Github organization
-- A VPS which SponsorMonitor will reside on (I'm using a t2.small instance on AWS EC2)
-- A domain pointing to your VPS
-- A valid SSL cert (Installing SponsorMonitor via Docker automates this for you)
+- A Google Cloud project with billing enabled
 
 ## Workflow
 
@@ -101,28 +103,21 @@ After you create it, it'll complain to you that it was unable to send the "*Ping
 
 ## Installing and Running SponsorMonitor
 
-I highly recommend using Docker/docker-compose cause it makes installing everything and setting up the Let's Encrypt TLS certificate a breeze (it'll even renew the cert for you!).
+Once you have a google cloud account set up with billing enabled, you'll want to have the [gcloud cli](https://cloud.google.com/sdk/gcloud) installed.
+Run `gcloud auth login`.
 
-How to install docker & docker-compose is out of scope for this but just make sure you're using the latest version of both and not the ones from the OS's package manager.
+There you'll see 2 files:
 
-Once you have a VPS going, a domain pointing to it, docker & docker-compose installed: git clone this repository and `cd` into the docker-compose folder.
-
-There you'll see 4 files:
-
-- `.env`: which is where you're going to be putting your Github Access Token, Wehbook Secret and Domain
-- `docker-compose.yml`: the docker compose file which will set everything up (you don't have to touch this)
+- `.env`: which is where you're going to be putting your Github Access Token and Wehbook Secret
 - `sm.conf`: the configuration file for SponsorMonitor
-- `traefik.yml`: the configuration file for [Traefik](https://docs.traefik.io/) a reverse-proxy which will handle the SSL Cert creation and renewal.
-
 
 ### .env
 
-Put your Github Access Token, Webhook Secret and domain pointing to your VPS in here:
+Put your Github Access Token and Webhook Secret:
 
 ```env
 GITHUB_ACCESS_TOKEN=githubaccesstoken
 SECRET_TOKEN=secretwebhooktoken
-DOMAIN=webhook.example.com
 ```
 
 ### sm.conf
@@ -146,52 +141,29 @@ OrgName = Porchetta-Industries
 300 = Gold Sponsors
 ```
 
-### traefik.yml
-
-This is the configuration for [Traefik](https://docs.traefik.io/), the only thing needed here is to change the email and comment out the `caServer` statement
-
-```yml
-# Docker configuration backend
-providers:
-    docker:
-      defaultRule: "Host(`{{ trimPrefix `/` .Name }}.docker.localhost`)"
-
-# API and dashboard configuration
-api:
-    insecure: true
-
-entryPoints:
-    web:
-      address: ":80"
-
-    websecure:
-      address: ":443"
-
-certificatesResolvers:
-    myresolver:
-        acme:
-            email: admin@example.com # Change this to a valid email
-            storage: acme.json
-            caServer: "https://acme-staging-v02.api.letsencrypt.org/directory" # Staging server for testing, comment when deploying to prod
-            httpChallenge:
-                entryPoint: web
-```
-
 ### Running SponsorMonitor
 
 Once you got the configuration down, simply run in the same directory:
 
+This will deploy your google function which you should be able to see [here](https://console.cloud.google.com/functions/list)
 ```console
-docker-compose up -d
+gcloud functions deploy sponsormonitor --trigger-http --runtime python37
 ```
 
-Congrats! Everything should be ready to go! Visit the domain and you should see that the SSL cert is valid and there's a JSON endpoint waiting for a POST request from Github!
+To run the function locally for testing, use
+```console
+functions-framework --target sponsormonitor
+```
+
+Congrats! Everything should be ready to go!
+You can find your domain in the cloud functions UI
+![](https://user-images.githubusercontent.com/9831420/105618184-bbfd7580-5da1-11eb-8778-47bb5ff535dc.png)
 
 If you want to double check everything is golden:
 
 - Go back to the Webhook page on your Github Sponsorship Dashboard
 - Under the "Recent Deliveries" section you should see the *Ping Payload" which previously failed.
-- Expand the tab and hit "Redilever" 
+- Expand the tab and hit "Redeliver"
 - There now should be a green checkmark! Everything's good to go!
 
 Now whenever you get a new sponsor they'll be added into the appropriate organization team and if they cancel or change sponsorship tiers, SponsorMonitor will change things accordingly!
@@ -201,7 +173,3 @@ Now whenever you get a new sponsor they'll be added into the appropriate organiz
 SponsorMonitor allows you to automate a lot of the manual tasks you'll encounter if you use a Github Organization as a way to give access to your Sponsorware.
 
 Hopefully, this will help other people in the OSS/Infosec community to adopt the [Sponsorware](https://github.com/sponsorware/docs) model as I have and cut down on the manual tasks.
-
-Cheers and stay safe,
-
-M.
