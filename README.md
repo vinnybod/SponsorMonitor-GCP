@@ -103,7 +103,7 @@ After you create it, it'll complain to you that it was unable to send the "*Ping
 
 ## Installing and Running SponsorMonitor
 
-Once you have a google cloud account set up with billing enabled, you'll want to have the [gcloud cli](todo) installed.
+Once you have a google cloud account set up with billing enabled, you'll want to have the [gcloud cli](https://cloud.google.com/sdk/gcloud) installed.
 Run `gcloud auth login`.
 
 There you'll see 2 files:
@@ -146,11 +146,12 @@ OrgName = Porchetta-Industries
 
 Once you got the configuration down, simply run in the same directory:
 
+This will deploy your google function which you should be able to see [here](https://console.cloud.google.com/functions/list)
 ```console
 gcloud functions deploy sponsormonitor --trigger-http --runtime python37
 ```
 
-To run the functions locally, use
+To run the function locally for testing, use
 ```console
 functions-framework --target sponsormonitor
 ```
@@ -161,7 +162,7 @@ If you want to double check everything is golden:
 
 - Go back to the Webhook page on your Github Sponsorship Dashboard
 - Under the "Recent Deliveries" section you should see the *Ping Payload" which previously failed.
-- Expand the tab and hit "Redilever" 
+- Expand the tab and hit "Redeliver"
 - There now should be a green checkmark! Everything's good to go!
 
 Now whenever you get a new sponsor they'll be added into the appropriate organization team and if they cancel or change sponsorship tiers, SponsorMonitor will change things accordingly!
