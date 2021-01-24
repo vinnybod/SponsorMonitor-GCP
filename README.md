@@ -2,7 +2,7 @@
 
 This is a simple service which monitors Github sponsors (via the built-in sponsor webhook functionality) and automatically adds them to a specific Github Organization team depending on the sponsorship tier.
 
-># Motivation
+# Motivation
 
 This was built to encourage OSS developers (specifically Infosec tool developers) to adopt the [Sponsorware](https://github.com/sponsorware/docs) release model as I think it's vastly superior to the traditional commercial software model since it benefits both the OSS/Infosec community and the developer.
 
@@ -108,17 +108,16 @@ Run `gcloud auth login`.
 
 There you'll see 2 files:
 
-- `.env`: which is where you're going to be putting your Github Access Token, Wehbook Secret and Domain
+- `.env`: which is where you're going to be putting your Github Access Token and Wehbook Secret
 - `sm.conf`: the configuration file for SponsorMonitor
 
 ### .env
 
-Put your Github Access Token, Webhook Secret and domain pointing to your VPS in here:
+Put your Github Access Token and Webhook Secret:
 
 ```env
 GITHUB_ACCESS_TOKEN=githubaccesstoken
 SECRET_TOKEN=secretwebhooktoken
-DOMAIN=webhook.example.com
 ```
 
 ### sm.conf
@@ -156,7 +155,9 @@ To run the function locally for testing, use
 functions-framework --target sponsormonitor
 ```
 
-Congrats! Everything should be ready to go! Visit the domain and you should see that the SSL cert is valid and there's a JSON endpoint waiting for a POST request from Github!
+Congrats! Everything should be ready to go!
+You can find your domain in the cloud functions UI
+![](https://user-images.githubusercontent.com/9831420/105618184-bbfd7580-5da1-11eb-8778-47bb5ff535dc.png)
 
 If you want to double check everything is golden:
 

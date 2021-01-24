@@ -23,12 +23,11 @@ async def do_work(request):
         data = SponsorActivity.parse_obj(request.get_json())
     except ValidationError as e:
         log.info("Could not parse to sponsoractivity")
-        # pass
     try:
         data = PingPayload.parse_obj(request.get_json())
     except ValidationError as e:
         log.info("Could not parse to pingpayload")
-        # pass
+
     if data is None:
         return make_response({'error': 'could not parse payload'}, 400)
 
