@@ -30,7 +30,7 @@ async def get_team_slug(team_name):
 
 
 # https://docs.github.com/en/rest/reference/teams#add-or-update-team-membership-for-a-user
-async def send_org_invite(user_id: int, tier: int):
+async def send_org_invite(user: str, tier: int):
     team_name = settings.tiers.get(tier)
     if not team_name:
         raise Exception(
@@ -41,7 +41,7 @@ async def send_org_invite(user_id: int, tier: int):
 
     async with httpx.AsyncClient() as client:
         r = await client.put(
-            f"https://api.github.com/orgs/{settings.github_org}/teams/{team_slug}/memberships/{user_id}",
+            f"https://api.github.com/orgs/{settings.github_org}/teams/{team_slug}/memberships/{user}",
             headers={"Authorization": f"token {settings.github_access_token}"},
             json={"role": "member"},
         )
